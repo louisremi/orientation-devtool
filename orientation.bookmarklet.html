@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html acc>
+<head>
+<meta charset="utf-8">
+<script src="lib/froglet.guest.js"></script>
+<script src="lib/rotor.js"></script>
+<style>
+html {
+	height: 100%;
+	background: #444;
+}
+
+body {
+	margin: 0;
+	padding: 25px 0 0;
+	font-family: Arial, Helvetica, Liberation Sans, sans-serif;
+}
+
+#shake, #flat {
+	position: absolute;
+	bottom: 10px;
+}
+
+#shake {
+	left: 10px;
+	color: #EEE;
+}
+
+#flat {
+	right: 10px;
+}
+
+.stage {
+	position: relative;
+	width: 300px;
+	height: 250px;
+	-moz-perspective: 500px;
+	-webkit-perspective: 500px;
+	-ms-perspective: 500px;
+	-o-perspective: 500px;
+}
+
+.smartphone {
+	position: absolute;
+	width: 100px;
+	height: 170px;
+	top: 40px;
+	left: 100px;
+	-moz-transform-style: preserve-3d;
+	-webkit-transform-style: preserve-3d;
+	-ms-transform-style: preserve-3d;
+	-o-transform-style: preserve-3d;
+}
+.smartphone > * {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	-moz-backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	-ms-backface-visibility: hidden;
+	-o-backface-visibility: hidden;
+}
+.backface {
+	position: absolute;
+	border-radius: 10px;
+	background: #333;
+	-moz-transform: translateZ(-1px) rotateY(180deg);
+	-webkit-transform: translateZ(-1px) rotateY(180deg);
+	-ms-transform: translateZ(-1px) rotateY(180deg);
+	-o-transform: translateZ(-1px) rotateY(180deg);
+}
+</style>
+</head>
+<body>
+
+
+<label id="shake" for=shk><input type=checkbox id=shk>Shaking</label>
+<button id=flat>Flat on its back</button>
+
+<div class="stage"><div id="_3d" class="smartphone">
+	<svg class="backface" xmlns="http://www.w3.org/2000/svg" version="1.1"  
+		viewBox="0 0 100 170" preserveAspectRatio="xMidYMid slice">  
+		<rect 	ry="10"	rx="10"	y="0"		x="0"		height="170"	width="100" style="fill:#1a1a1a;" />
+		<circle	cx="14"	cy="14"								r="7"										style="fill:#ffffff;" />  
+	</svg>
+	<svg class="frontface" xmlns="http://www.w3.org/2000/svg" version="1.1"  
+		viewBox="0 0 100 170" preserveAspectRatio="xMidYMid slice">  
+		<rect 	ry="10"	rx="10"	y="0"		x="0"		height="170"	width="100" style="fill:#1a1a1a;" />
+		<rect		ry="0"	rx="0"	y="15"	x="5"		height="130"	width="90"	style="fill:#ffffff;" />
+		<rect		rx="4"	ry="4"	y="5"		x="35"	height="6"		width="30"	style="fill:#ffffff;" />
+	  <circle	cx="50"	cy="158"								r="9"										style="fill:#ffffff;" />  
+	</svg>
+</div></div>
+
+<script>
+
+var rtr,
+	$shake = $("shake"),
+	$flat = $("flat"),
+	$3d = $("_3d"),
+	$clone = $("clone"),
+	shaking;
+
+rtr = rotor( $3d, {inertia:false} );
+
+// reset controls
+$shake.checked = "";
+
+/*
+ * UI event listeners
+ */
+
+// shake listener
+$shake.onclick = function() {
+	shaking = shaking ?
+		clearTimeout( shaking ):
+		setInterval(function() {
+			var aaCur = rtr.rotation();
+
+			rtr.rotation({
+				x: aaCur.x + smallRand(),
+				y: aaCur.y + smallRand(),
+				z: aaCur.z + smallRand(),
+				a: aaCur.a + smallRand()
+			});
+
+			emitEvents();
+		}, 100);
+};
+
+// flat listener
+$flat.onclick = function() {
+	rtr.rotation({
+		x: 1,
+		y: 0,
+		z: 0,
+		a: 0
+	});
+
+	emitEvents();
+}
+
+// pointer manipulation listener
+rtr.on({
+	move: function() {
+		emitEvents()
+	},
+	// do nothing on move and up
+	down: function(){},
+	up: function(){}
+});
+
+/*
+ * send events to the host
+ */
+function emitEvents() {
+	// conver axis-angle to deviceorientation
+	var orientation = orient( rtr.rotation() ); 
+	
+	froglet.emit( "deviceorientation", orientation );
+}
+
+/*
+ * Inline utils
+ */
+
+// getElementById
+function $(id){return document.getElementById(id)}
+// return 
+function smallRand(){return(Math.random()-.5)*.01}
+
+// convert a rotate3d axis-angle to deviceorientation angles
+// with kind help from Benoit Jacob
+function orient( aa ) {
+	var x = aa.x, y = aa.y, z = aa.z, a = aa.a,
+		c = Math.cos( aa.a ),
+		s = Math.sin( aa.a ),
+		t = 1 - c,
+		// axis-angle to rotation matrix
+		rm00 =    c + x*x * t,
+		rm10 =  z*s + y*x * t,
+		rm20 = -y*s + z*x * t,
+		rm01 = -z*s + x*y * t,
+		rm11 =    c + y*y * t,
+		rm21 =  x*s + z*y * t,
+		rm02 =  y*s + x*z * t,
+		rm12 = -x*s + y*z * t,
+		rm22 =    c + z*z * t,
+		
+		TO_DEG = 180 / Math.PI,
+		ea = [],
+		n = Math.sqrt( rm22 * rm22 + rm20 * rm20 );
+
+	// rotation matrix to Euler angles
+	ea[1] = Math.atan2( -rm21, n );
+
+	if ( n > 0.001 ) {
+		ea[0] = Math.atan2( rm01, rm11 );
+		ea[2] = Math.atan2( rm20, rm22 );
+
+	} else {
+		ea[0] = 0;
+		ea[2] = ( rm21 > 0 ? 1 : -1 ) * Math.atan2( -rm10, rm00 );
+	}
+
+	return {
+		alpha: -ea[0] * TO_DEG - 180,
+		beta:  -ea[1] * TO_DEG,
+		gamma:  ea[2] * TO_DEG
+	};
+}
+</script>
+
+</body>
+</html>
