@@ -1,6 +1,6 @@
 (function(window){
 
-var guest = froglet( "orientation.bookmarklet.html", {
+var guest = froglet( "http://louisremi.github.com/orientation-devtool/orientation.bookmarklet.html", {
 		bottom: 0,
 		right: 0,
 		height: 360,
