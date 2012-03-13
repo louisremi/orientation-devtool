@@ -11,7 +11,7 @@ body {
 
 #main {
 	width: 400px;
-	margin: 100px auto;
+	margin: 200px auto 0;
 }
 
 #blah {
@@ -135,12 +135,13 @@ a {
 
 	<p>
 		The bookmarklet creates a panel with a 3D view of a mobile device.<br/>
-		This mobile device is virtually wrapped in a trackball that can be manipulated with your mouse.
+		This mobile device is virtually wrapped in a trackball.<br/>
+		Manipulating it with the mouse simulates orientation events.
 	</p>
 
 	<br/>
 
-	<p><a id="bookmarklet" class="inverted" onclick="return false;" href='#'>Orientation Bookmarklet</a></p>
+	<p><a id="bookmarklet" class="inverted" onclick="return false;" href='javascript:(function(d){var b=document.body,s="script",u="http://louisremi.github.com/orientation-devtool/",x=d.createElement(s),y=d.createElement(s);x.async=false;y.async=false;x.src=u+"lib/froglet.host.js";y.src=u+"orientation.bookmarklet.js";b.appendChild(x);b.appendChild(y);})(document);'>Orientation Bookmarklet</a></p>
 
 	<br/>
 
@@ -180,9 +181,9 @@ a {
 	    "rotateY(" + ( -e.gamma ) + "deg)";  
 	});
 
+	(function(d){var b=document.body,s="script",u="http://louisremi.github.com/orientation-devtool/",x=d.createElement(s),y=d.createElement(s);x.async=false;y.async=false;x.src=u+"lib/froglet.host.js";y.src=u+"orientation.bookmarklet.js";b.appendChild(x);b.appendChild(y);})(document);
+
 	function $(i){return document.getElementById(i)}
 </script>
-<script src="lib/froglet.host.js"></script>
-<script src="orientation.bookmarklet.js"></script>
 </body>
 </html>
