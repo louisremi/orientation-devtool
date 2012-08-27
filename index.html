@@ -56,6 +56,14 @@ a {
 	padding: .2em;
 }
 
+#main ul {
+	list-style-type: none;
+	padding: 0;
+}
+#main h2, #main ul {
+	margin-left: 130px;
+}
+
 .cube {
 	float: left;
 	width: 60px;
@@ -159,12 +167,22 @@ a {
 		<div class="face f5"></div>
 	</div>
 
+	<h2>Orientation Data</h2>
+	<ul>
+		<li>alpha: <span id="data-alpha"></li>
+		<li>beta: <span id="data-beta"></li>
+		<li>gamma: <span id="data-gamma"></li>
+	</ul>
+
 </div>
 
 <a id="github" class="inverted" href="https://github.com/louisremi/orientation-devtool">Fork me on Github</a>
 
 <script>
 	var cube = $("c0"),
+		alpha = $("data-alpha"),
+		beta = $("data-beta"),
+		gamma = $("data-gamma"),
 		cubeStyle = cube.style,
 		_Transform = "Transform",
 		transform = "Moz" + _Transform in cubeStyle ? "Moz" + _Transform :
@@ -176,9 +194,14 @@ a {
 	transform && window.addEventListener("deviceorientation", function(e) {  
 	  // remember to use vendor-prefixed transform property  
 	  cube.style[ transform ] =  
-	    "rotateZ(" + ( e.alpha - 180 ) + "deg) " +  
-	    "rotateX(" + e.beta + "deg) " +  
-	    "rotateY(" + ( -e.gamma ) + "deg)";  
+	    "rotateZ(" + ( e.alpha - 180 ) + "deg) " +
+	    "rotateX(" + e.beta + "deg) " +
+	    "rotateY(" + ( -e.gamma ) + "deg)";
+
+	  // display orientation data
+	  alpha.innerHTML = e.alpha;
+	  beta.innerHTML = e.beta;
+	  gamma.innerHTML = e.gamma;
 	});
 
 	(function(d){var b=document.body,s="script",u="http://louisremi.github.com/orientation-devtool/",x=d.createElement(s),y=d.createElement(s);x.async=false;y.async=false;x.src=u+"lib/froglet.host.js";y.src=u+"orientation.bookmarklet.js";b.appendChild(x);b.appendChild(y);})(document);
